@@ -1,0 +1,73 @@
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap");
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+:root {
+  /* Brand colors */
+  --color-primary: #111111;
+  --color-accent: #c89b3c;
+
+  /* Neutrals */
+  --color-neutral-50: #fafafa;
+  --color-neutral-100: #f5f5f5;
+  --color-neutral-200: #e5e5e5;
+  --color-neutral-300: #d4d4d4;
+  --color-neutral-400: #a3a3a3;
+  --color-neutral-500: #737373;
+  --color-neutral-600: #525252;
+  --color-neutral-700: #404040;
+  --color-neutral-800: #262626;
+  --color-neutral-900: #171717;
+
+  /* Spacing */
+  --spacing-section: 6rem;
+  --container-max: 1280px;
+}
+
+.hero-font {
+  font-family: "Playfair Display", serif;
+}
+
+body {
+  background-color: #ffffff;
+}
+
+@keyframes heartFly {
+  0%   { transform: scale(2.5) translateY(-8px); opacity: 1; }
+  75%  { opacity: 1; }
+  100% { transform: scale(0) translateY(0); opacity: 0; }
+}
+
+@keyframes heartFail {
+  0%   { transform: scale(2.5) translateY(-8px); opacity: 1; }
+  40%  { transform: scale(1.8) translateY(-4px); opacity: 1; }
+  75%  { transform: scale(1.2) translateY(-2px); opacity: 0.9; }
+  100% { transform: scale(0.6) translateY(0); opacity: 0; }
+}
+
+@keyframes fadeOutHalf {
+  0%   { opacity: 1; }
+  45%  { opacity: 1; }
+  60%  { opacity: 0; }
+  100% { opacity: 0; }
+}
+
+@keyframes fadeInHalf {
+  0%   { opacity: 0; }
+  45%  { opacity: 0; }
+  60%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes cartBadgeBump {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(1.7); }
+  55%  { transform: scale(0.85); }
+  75%  { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.cart-badge-bump {
+  animation: cartBadgeBump 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
