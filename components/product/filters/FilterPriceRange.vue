@@ -51,18 +51,18 @@ function formatBound(val) {
         :min="min"
         :max="max"
         placeholder="Min"
-        class="w-full border border-neutral-200 rounded px-2.5 py-1.5 text-sm focus:outline-none focus:border-neutral-500 transition-colors"
+        class="w-full border border-neutral-200 rounded px-2.5 py-1.5 text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-neutral-500 transition-colors"
         @blur="apply"
         @keydown.enter="apply"
       />
-      <span class="text-neutral-300 shrink-0">–</span>
+      <span class="text-neutral-400 shrink-0">–</span>
       <input
         v-model="localMax"
         type="number"
         :min="min"
         :max="max"
         placeholder="Max"
-        class="w-full border border-neutral-200 rounded px-2.5 py-1.5 text-sm focus:outline-none focus:border-neutral-500 transition-colors"
+        class="w-full border border-neutral-200 rounded px-2.5 py-1.5 text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-neutral-500 transition-colors"
         @blur="apply"
         @keydown.enter="apply"
       />
