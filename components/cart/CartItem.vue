@@ -4,6 +4,7 @@ const props = defineProps({
 })
 
 const cart = useCartStore()
+const thumb = computed(() => cart.thumbOverrides[props.item.product_id] ?? props.item.thumb ?? null)
 const updating = ref(false)
 
 async function setQuantity(qty) {
@@ -23,8 +24,8 @@ async function remove() {
     <!-- Thumbnail -->
     <div class="w-16 h-20 shrink-0 bg-neutral-100 rounded overflow-hidden">
       <img
-        v-if="item.thumb"
-        :src="item.thumb"
+        v-if="thumb"
+        :src="thumb"
         :alt="item.name"
         class="w-full h-full object-cover"
       />

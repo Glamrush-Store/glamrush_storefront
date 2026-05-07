@@ -122,7 +122,7 @@ const pageRange = computed(() => {
             <!-- Sort -->
             <select
               :value="currentSort"
-              class="text-sm border border-neutral-200 rounded-md px-3 py-1.5 bg-white focus:outline-none focus:border-neutral-400 cursor-pointer transition-colors hover:border-neutral-400"
+              class="text-sm text-neutral-900 border border-neutral-200 rounded-md px-3 py-1.5 bg-white focus:outline-none focus:border-neutral-400 cursor-pointer transition-colors hover:border-neutral-400"
               @change="handleSort($event.target.value)"
             >
               <option v-for="opt in sortOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>

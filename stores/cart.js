@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 
 export const useCartStore = defineStore('cart', () => {
   const items = ref([])
+  const thumbOverrides = reactive({})
   const config = useRuntimeConfig()
   const cartToken = useCookie('cart_token', { sameSite: 'lax', path: '/' })
   const authToken = useCookie('auth_token')
@@ -37,13 +38,16 @@ export const useCartStore = defineStore('cart', () => {
     syncResponse(res)
   }
 
-  async function addItem(productId, quantity = 1) {
+  async function addItem(productId, quantity = 1, imageUrl = null, variantId = null) {
     try {
+      const body = { product_id: productId, quantity }
+      if (variantId) body.variant_id = variantId
       const res = await $fetch(`${config.public.apiBase}/cart`, {
         method: 'POST',
         headers: buildHeaders(),
-        body: { product_id: productId, quantity },
+        body,
       })
+      if (imageUrl) thumbOverrides[productId] = imageUrl
       syncResponse(res)
       return true
     } catch {
@@ -70,6 +74,7 @@ export const useCartStore = defineStore('cart', () => {
   async function removeItem(productId) {
     const prev = [...items.value]
     items.value = items.value.filter(i => i.product_id !== productId)
+    delete thumbOverrides[productId]
     try {
       await $fetch(`${config.public.apiBase}/cart/${productId}`, {
         method: 'DELETE',
@@ -106,5 +111,5 @@ export const useCartStore = defineStore('cart', () => {
     }
   }
 
-  return { items, itemCount, fetchCart, addItem, updateQuantity, removeItem, clearCart, mergeGuestCart }
+  return { items, thumbOverrides, itemCount, fetchCart, addItem, updateQuantity, removeItem, clearCart, mergeGuestCart }
 })
