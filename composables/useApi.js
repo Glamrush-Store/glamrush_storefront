@@ -8,12 +8,7 @@ export function useApi() {
       headers['Authorization'] = `Bearer ${token.value}`
     }
 
-    try {
-      return await $fetch(`${config.public.apiBase}${endpoint}`, { ...options, headers })
-    } catch (err) {
-      if (err.data) return err.data
-      throw err
-    }
+    return await $fetch(`${config.public.apiBase}${endpoint}`, { ...options, headers })
   }
 
   return { request }

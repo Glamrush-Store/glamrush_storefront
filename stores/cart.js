@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 
 export const useCartStore = defineStore('cart', () => {
   const items = ref([])
+  const subtotal = ref(0)
   const thumbOverrides = reactive({})
   const config = useRuntimeConfig()
   const cartToken = useCookie('cart_token', { sameSite: 'lax', path: '/' })
@@ -24,6 +25,7 @@ export const useCartStore = defineStore('cart', () => {
     if (res.cart_token) cartToken.value = res.cart_token
     if (Array.isArray(res.data)) {
       items.value = res.data
+      subtotal.value = res.subtotal ?? 0
     } else if (res.data) {
       const idx = items.value.findIndex(i => i.product_id === res.data.product_id)
       if (idx >= 0) items.value[idx] = res.data
@@ -42,13 +44,13 @@ export const useCartStore = defineStore('cart', () => {
     try {
       const body = { product_id: productId, quantity }
       if (variantId) body.variant_id = variantId
-      const res = await $fetch(`${config.public.apiBase}/cart`, {
+      await $fetch(`${config.public.apiBase}/cart`, {
         method: 'POST',
         headers: buildHeaders(),
         body,
       })
       if (imageUrl) thumbOverrides[productId] = imageUrl
-      syncResponse(res)
+      await fetchCart()
       return true
     } catch {
       return false
@@ -107,9 +109,10 @@ export const useCartStore = defineStore('cart', () => {
     }).catch(() => null)
     if (res) {
       items.value = res.data ?? []
+      subtotal.value = res.subtotal ?? 0
       cartToken.value = null
     }
   }
 
-  return { items, thumbOverrides, itemCount, fetchCart, addItem, updateQuantity, removeItem, clearCart, mergeGuestCart }
+  return { items, subtotal, thumbOverrides, itemCount, fetchCart, addItem, updateQuantity, removeItem, clearCart, mergeGuestCart }
 })

@@ -316,7 +316,7 @@ const addingToCart = ref(false)
 const currentImage = computed(() => allImages.value[activeImageIdx.value] ?? null)
 
 async function handleAddToCart() {
-  if (addingToCart.value || !isAvailable.value) return
+  if (addingToCart.value || buyingNow.value || !isAvailable.value) return
   addingToCart.value = true
   const success = await cart.addItem(product.value.id, qty.value, currentImage.value, selectedVariantId.value)
   addingToCart.value = false
@@ -326,7 +326,7 @@ async function handleAddToCart() {
 const buyingNow = ref(false)
 
 async function handleBuyNow() {
-  if (buyingNow.value || !isAvailable.value) return
+  if (buyingNow.value || addingToCart.value || !isAvailable.value) return
   buyingNow.value = true
   const success = await cart.addItem(product.value.id, qty.value, currentImage.value, selectedVariantId.value)
   buyingNow.value = false
