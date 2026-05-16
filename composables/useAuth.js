@@ -2,6 +2,19 @@ export function useAuth() {
   const authStore = useAuthStore();
   const { request } = useApi();
   const router = useRouter();
+  const route = useRoute();
+
+  function getRedirectTarget() {
+    const redirect = Array.isArray(route.query.redirect)
+      ? route.query.redirect[0]
+      : route.query.redirect;
+
+    if (typeof redirect === "string" && redirect.startsWith("/") && !redirect.startsWith("//")) {
+      return redirect;
+    }
+
+    return "/";
+  }
 
   async function register(name, email, password, passwordConfirmation) {
     const res = await request("/auth/register", {
@@ -15,7 +28,7 @@ export function useAuth() {
     });
     if (res?.data?.token) {
       authStore.setAuth(res.data);
-      await router.push("/");
+      await router.push(getRedirectTarget());
       return { success: true };
     }
     return {
@@ -32,7 +45,7 @@ export function useAuth() {
     });
     if (res?.data?.token) {
       authStore.setAuth(res.data);
-      await router.push("/");
+      await router.push(getRedirectTarget());
       return { success: true };
     }
     return {

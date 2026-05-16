@@ -1,5 +1,21 @@
 import { defineStore } from "pinia";
 
+function decodeJwtPayload(token) {
+  const [, payload] = token.split(".");
+  if (!payload) return null;
+
+  const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
+  const padded = normalized.padEnd(normalized.length + ((4 - normalized.length % 4) % 4), "=");
+  const json = decodeURIComponent(
+    atob(padded)
+      .split("")
+      .map((char) => `%${char.charCodeAt(0).toString(16).padStart(2, "0")}`)
+      .join("")
+  );
+
+  return JSON.parse(json);
+}
+
 export const useAuthStore = defineStore("auth", {
   state: () => ({
     user: null,
@@ -77,7 +93,7 @@ export const useAuthStore = defineStore("auth", {
     decodeToken() {
       if (!this.token) return null;
       try {
-        return jwtDecode(this.token);
+        return decodeJwtPayload(this.token);
       } catch {
         return null;
       }

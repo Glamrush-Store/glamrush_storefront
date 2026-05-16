@@ -1,6 +1,4 @@
 <script setup>
-definePageMeta({ middleware: 'auth' })
-
 const cart = useCartStore()
 const authStore = useAuthStore()
 const {
@@ -13,6 +11,15 @@ const {
 const co = useCheckoutState()
 const toast = useToast()
 
+const {
+  countryOptions,
+  stateOptions,
+  cityOptions,
+  resolveCountryCode,
+} = useAddressLocationOptions(co.newAddr)
+
+co.newAddr.country = resolveCountryCode(co.newAddr.country)
+
 // ── Derived address state ──────────────────────────────────────────────────
 // Bridges the saved address list (from useAddresses) with mode state (from composable).
 const currentAddress = computed(() => {
@@ -24,8 +31,8 @@ const currentAddress = computed(() => {
 
 const addressComplete = computed(() => {
   if (co.addressMode.value === 'saved') return !!co.selectedAddressId.value
-  const { first_name, last_name, address_line_1, city, state, country } = co.newAddr
-  return !!(first_name && last_name && address_line_1 && city && state && country)
+  const { first_name, last_name, email, address_line_1, city, state, country } = co.newAddr
+  return !!(first_name && last_name && email && address_line_1 && city && state && country)
 })
 
 const newAddrShippingReady = computed(() =>
@@ -42,7 +49,15 @@ const canPlace = computed(() =>
 
 // ── Initialization ─────────────────────────────────────────────────────────
 onMounted(async () => {
-  await Promise.all([cart.fetchCart(), fetchAddresses(), co.loadPaymentMethods()])
+  const initializers = [cart.fetchCart(), co.loadPaymentMethods()]
+  if (authStore.isLoggedIn) {
+    initializers.push(fetchAddresses())
+  }
+
+  await Promise.all(initializers)
+  if (authStore.user?.email && !co.newAddr.email) {
+    co.newAddr.email = authStore.user.email
+  }
 
   if (!addresses.value.length) {
     co.addressMode.value = 'new'
@@ -66,6 +81,33 @@ watch(co.selectedAddressId, async (id) => {
 // Clear shipping when switching address mode.
 watch(co.addressMode, () => co.clearShipping())
 
+watch(() => co.newAddr.country, (country, previousCountry) => {
+  const countryCode = resolveCountryCode(country)
+  if (countryCode && countryCode !== country) {
+    co.newAddr.country = countryCode
+    return
+  }
+
+  if (previousCountry !== undefined && country !== previousCountry) {
+    co.newAddr.state = ''
+    co.newAddr.city = ''
+    co.clearShipping()
+  }
+})
+
+watch(() => co.newAddr.state, (state, previousState) => {
+  if (previousState !== undefined && state !== previousState) {
+    co.newAddr.city = ''
+    co.clearShipping()
+  }
+})
+
+watch(() => co.newAddr.city, (city, previousCity) => {
+  if (previousCity !== undefined && city !== previousCity) {
+    co.clearShipping()
+  }
+})
+
 // ── Helpers ────────────────────────────────────────────────────────────────
 function switchToNew() { co.addressMode.value = 'new' }
 function switchToSaved() { co.addressMode.value = 'saved' }
@@ -75,19 +117,19 @@ async function placeOrder() {
   if (!canPlace.value || co.placing.value) return
   co.placing.value = true
   try {
-    if (co.addressMode.value === 'new' && co.saveNewAddress.value) {
-      await createAddress({ ...co.newAddr }).catch(() => {})
+    if (authStore.isLoggedIn && co.addressMode.value === 'new' && co.saveNewAddress.value) {
+      const { email, ...addressData } = co.newAddr
+      await createAddress(addressData).catch(() => {})
     }
 
     const addr = currentAddress.value
     const order = await co.submitOrder({
       full_name: `${addr.first_name} ${addr.last_name}`.trim(),
-      email: authStore.user?.email ?? '',
+      email: addr.email ?? authStore.user?.email ?? '',
       phone: addr.phone ?? '',
       country: addr.country,
       state: addr.state,
       city: addr.city,
-      postal_code: addr.postal_code ?? '',
       line1: addr.address_line_1,
       line2: addr.address_line_2 ?? '',
     })
@@ -95,13 +137,19 @@ async function placeOrder() {
     const orderId = order?.data?.id ?? order?.id
     const payment = await co.initializePayment(orderId)
 
-    await cart.clearCart()
-
     const selectedMethod = co.paymentMethods.value.find(m => m.id === co.selectedPayment.value)
-    if (selectedMethod?.requiresRedirect) {
-      await navigateTo(payment.data.authorization_url, { external: true })
+
+    if (selectedMethod?.supportsVerification) {
+      const authorizationUrl = payment?.data?.authorization_url
+
+      if (!authorizationUrl) {
+        throw new Error('Payment verification is supported, but no payment URL was returned.')
+      }
+
+      await navigateTo(authorizationUrl, { external: true })
     } else {
-      await navigateTo('/checkout/confirmation')
+      await cart.clearCart()
+      await navigateTo('/payment/success')
     }
   } catch (e) {
     toast.add({
@@ -249,9 +297,7 @@ const summaryOpen = shallowRef(false)
                       <p v-if="addr.address_line_2" class="text-neutral-600 truncate">
                         {{ addr.address_line_2 }}
                       </p>
-                      <p class="text-neutral-600">
-                        {{ addr.city }}, {{ addr.state }} {{ addr.postal_code }}
-                      </p>
+                      <p class="text-neutral-600">{{ addr.city }}, {{ addr.state }}</p>
                       <p class="text-neutral-600">{{ addr.country }}</p>
                       <p v-if="addr.phone" class="text-xs text-neutral-400 mt-0.5">{{ addr.phone }}</p>
                     </div>
@@ -294,6 +340,19 @@ const summaryOpen = shallowRef(false)
                   </div>
 
                   <div>
+                    <label class="block text-xs font-medium text-neutral-600 mb-1.5">
+                      Email <span class="text-red-500">*</span>
+                    </label>
+                    <UInput
+                      v-model="co.newAddr.email"
+                      type="email"
+                      placeholder="jane@example.com"
+                      icon="i-lucide-mail"
+                      class="w-full"
+                    />
+                  </div>
+
+                  <div>
                     <label class="block text-xs font-medium text-neutral-600 mb-1.5">Phone</label>
                     <UInput
                       v-model="co.newAddr.phone"
@@ -327,46 +386,49 @@ const summaryOpen = shallowRef(false)
                     />
                   </div>
 
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
                       <label class="block text-xs font-medium text-neutral-600 mb-1.5">
-                        City <span class="text-red-500">*</span>
+                        Country <span class="text-red-500">*</span>
                       </label>
-                      <UInput v-model="co.newAddr.city" placeholder="Lagos" class="w-full" />
-                    </div>
-                    <div>
-                      <label class="block text-xs font-medium text-neutral-600 mb-1.5">
-                        State <span class="text-red-500">*</span>
-                      </label>
-                      <UInput v-model="co.newAddr.state" placeholder="Lagos State" class="w-full" />
-                    </div>
-                  </div>
-
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label class="block text-xs font-medium text-neutral-600 mb-1.5">
-                        Postal Code
-                      </label>
-                      <UInput
-                        v-model="co.newAddr.postal_code"
-                        placeholder="100001"
+                      <USelect
+                        v-model="co.newAddr.country"
+                        :items="countryOptions"
+                        placeholder="Select country"
                         class="w-full"
                       />
                     </div>
                     <div>
                       <label class="block text-xs font-medium text-neutral-600 mb-1.5">
-                        Country <span class="text-red-500">*</span>
+                        State <span class="text-red-500">*</span>
                       </label>
-                      <UInput
-                        v-model="co.newAddr.country"
-                        placeholder="Nigeria"
+                      <USelect
+                        v-model="co.newAddr.state"
+                        :items="stateOptions"
+                        :disabled="!co.newAddr.country"
+                        placeholder="Select state"
+                        class="w-full"
+                      />
+                    </div>
+                    <div>
+                      <label class="block text-xs font-medium text-neutral-600 mb-1.5">
+                        City <span class="text-red-500">*</span>
+                      </label>
+                      <USelect
+                        v-model="co.newAddr.city"
+                        :items="cityOptions"
+                        :disabled="!co.newAddr.state"
+                        placeholder="Select city"
                         class="w-full"
                       />
                     </div>
                   </div>
 
                   <!-- Save address -->
-                  <label class="flex items-center gap-2.5 cursor-pointer select-none group">
+                  <label
+                    v-if="authStore.isLoggedIn"
+                    class="flex items-center gap-2.5 cursor-pointer select-none group"
+                  >
                     <input
                       v-model="co.saveNewAddress.value"
                       type="checkbox"

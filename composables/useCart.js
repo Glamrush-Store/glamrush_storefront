@@ -1,12 +1,16 @@
 const CART_TOKEN_KEY = 'glamrush_cart_token'
 
 function generateCartToken() {
-  return 'cart_' + crypto.randomUUID()
+  if (globalThis.crypto?.randomUUID) {
+    return globalThis.crypto.randomUUID()
+  }
+
+  return `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 15)}`
 }
 
 function getOrCreateCartToken() {
   let token = localStorage.getItem(CART_TOKEN_KEY)
-  if (!token) {
+  if (!token || token.length > 36) {
     token = generateCartToken()
     localStorage.setItem(CART_TOKEN_KEY, token)
   }

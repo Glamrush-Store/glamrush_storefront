@@ -1,16 +1,10 @@
 export async function useCmsPage(slug) {
-  const config = useRuntimeConfig()
   const cacheKey = `strapi-page-${slug}`
 
   const { data: pageData, pending, error } = await useFetch(
-    `${config.public.strapiUrl}/pages`,
+    `/api/cms/pages/${slug}`,
     {
       key: cacheKey,
-      query: {
-        'filters[slug][$eq]': slug,
-        populate: 'blocks.backgroundImage,blocks.cta',
-      },
-      headers: { Authorization: `Bearer ${config.public.strapiToken}` },
       getCachedData(key, nuxtApp) {
         const cached = nuxtApp.payload.data[key] ?? nuxtApp.static.data[key]
         if (!cached?._cacheExpiresAt || Date.now() > cached._cacheExpiresAt) {

@@ -30,8 +30,6 @@ async function onSubmit() {
   const res = await login(state.email, state.password);
   pending.value = false;
 
-  console.log("Login response:", res);
-
   if (!res?.success) {
     toast.add({
       title: res?.message ?? "Login failed",
