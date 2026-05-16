@@ -57,7 +57,10 @@ export function useCatalog() {
   const { data, pending } = useAsyncData(
     'catalog',
     () => $fetch(`${config.public.apiBase}/products`, { query: apiQuery.value }),
-    { watch: [apiQuery] }
+    {
+      server: false,
+      watch: [apiQuery],
+    }
   )
 
   const products = computed(() => data.value?.data ?? [])

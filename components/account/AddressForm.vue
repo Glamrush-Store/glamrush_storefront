@@ -18,7 +18,6 @@ const schema = z.object({
   country: z.string().min(1, 'Country is required'),
   state: z.string().min(1, 'State / province is required'),
   city: z.string().min(1, 'City is required'),
-  postal_code: z.string().min(1, 'Postal code is required'),
 })
 
 const form = reactive({
@@ -28,10 +27,37 @@ const form = reactive({
   phone: props.initialData?.phone ?? '',
   address_line_1: props.initialData?.address_line_1 ?? '',
   address_line_2: props.initialData?.address_line_2 ?? '',
-  country: props.initialData?.country ?? '',
+  country: props.initialData?.country ?? 'NG',
   state: props.initialData?.state ?? '',
   city: props.initialData?.city ?? '',
-  postal_code: props.initialData?.postal_code ?? '',
+})
+
+const {
+  countryOptions,
+  stateOptions,
+  cityOptions,
+  resolveCountryCode,
+} = useAddressLocationOptions(form)
+
+form.country = resolveCountryCode(form.country)
+
+watch(() => form.country, (country, previousCountry) => {
+  const countryCode = resolveCountryCode(country)
+  if (countryCode && countryCode !== country) {
+    form.country = countryCode
+    return
+  }
+
+  if (previousCountry !== undefined && country !== previousCountry) {
+    form.state = ''
+    form.city = ''
+  }
+})
+
+watch(() => form.state, (state, previousState) => {
+  if (previousState !== undefined && state !== previousState) {
+    form.city = ''
+  }
 })
 
 function onSubmit() {
@@ -70,21 +96,36 @@ function onSubmit() {
       <UInput v-model="form.address_line_2" placeholder="Flat 3B" class="w-full" />
     </UFormField>
 
-    <div class="grid grid-cols-3 gap-3">
-      <UFormField name="city" label="City" required>
-        <UInput v-model="form.city" placeholder="Surulere" class="w-full" />
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <UFormField name="country" label="Country" required>
+        <USelect
+          v-model="form.country"
+          :items="countryOptions"
+          placeholder="Select country"
+          class="w-full"
+        />
       </UFormField>
+
       <UFormField name="state" label="State" required>
-        <UInput v-model="form.state" placeholder="Lagos" class="w-full" />
+        <USelect
+          v-model="form.state"
+          :items="stateOptions"
+          :disabled="!form.country"
+          placeholder="Select state"
+          class="w-full"
+        />
       </UFormField>
-      <UFormField name="postal_code" label="Postal Code" required>
-        <UInput v-model="form.postal_code" placeholder="101212" class="w-full" />
+
+      <UFormField name="city" label="City" required>
+        <USelect
+          v-model="form.city"
+          :items="cityOptions"
+          :disabled="!form.state"
+          placeholder="Select city"
+          class="w-full"
+        />
       </UFormField>
     </div>
-
-    <UFormField name="country" label="Country" required>
-      <UInput v-model="form.country" placeholder="Nigeria" class="w-full" />
-    </UFormField>
 
     <div class="flex justify-end gap-3 pt-2">
       <UButton type="button" variant="ghost" color="neutral" :disabled="loading" @click="emit('cancel')">
