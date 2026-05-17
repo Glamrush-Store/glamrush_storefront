@@ -1,5 +1,5 @@
 <script setup>
-const { categories } = await useCategories()
+const { categories } = useCategories()
 const route = useRoute()
 
 const activeCategory = computed(() => route.query.category ?? null)

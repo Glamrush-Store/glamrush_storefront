@@ -73,21 +73,24 @@ const cart = useCartStore()
 
         <!-- Footer -->
         <div v-if="cart.items.length" class="border-t border-neutral-200 px-5 py-4 space-y-3">
-          <UButton
+          <NuxtLink
             to="/checkout/information"
-            color="neutral"
-            variant="solid"
-            block
+            class="w-full flex items-center justify-center gap-2 bg-[#111111] text-white text-xs tracking-widest uppercase py-3 hover:bg-neutral-800 transition-colors cursor-pointer"
             @click="$emit('close')"
           >
+            <UIcon name="i-lucide-credit-card" class="w-4 h-4" />
             Proceed to Checkout
-          </UButton>
-          <button
-            class="w-full text-center text-xs text-neutral-400 hover:text-neutral-900 transition-colors py-1"
+          </NuxtLink>
+          <UButton
+            color="error"
+            variant="ghost"
+            icon="i-lucide-trash-2"
+            size="sm"
+            block
             @click="cart.clearCart()"
           >
             Clear cart
-          </button>
+          </UButton>
           <p class="text-center text-[11px] text-neutral-400 leading-snug">
             Items in your cart are reserved for 2 hours, after which they may be moved to your saved items.
           </p>

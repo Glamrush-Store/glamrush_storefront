@@ -1,7 +1,7 @@
-export async function useFooter() {
+export function useFooter() {
   const cacheKey = 'strapi-footer'
 
-  const { data: footerData, pending, error } = await useFetch(
+  const { data: footerData, pending, error } = useLazyFetch(
     '/api/cms/footer',
     {
       key: cacheKey,

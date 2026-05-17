@@ -1,11 +1,13 @@
-export default defineNuxtPlugin(async () => {
+export default defineNuxtPlugin(() => {
   const authStore = useAuthStore()
   authStore.init()
 
+  const cart = useCartStore()
+
+  const initializers = [cart.fetchCart()]
   if (authStore.token && !authStore.user) {
-    await authStore.fetchUser()
+    initializers.push(authStore.fetchUser())
   }
 
-  const cart = useCartStore()
-  await cart.fetchCart()
+  Promise.all(initializers).catch(() => {})
 })
