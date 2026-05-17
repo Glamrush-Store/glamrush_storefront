@@ -1,6 +1,8 @@
 export function useCheckoutState() {
   const { request } = useApi()
   const cart = useCartStore()
+  const authToken = useCookie('auth_token')
+  const cartToken = useCookie('cart_token', { sameSite: 'lax', path: '/' })
 
   // ── Address ────────────────────────────────────────────────────────────────
   const addressMode = shallowRef('saved') // 'saved' | 'new'
@@ -10,13 +12,13 @@ export function useCheckoutState() {
   const newAddr = reactive({
     first_name: '',
     last_name: '',
+    email: '',
     phone: '',
     address_line_1: '',
     address_line_2: '',
     city: '',
     state: '',
-    postal_code: '',
-    country: 'Nigeria',
+    country: 'NG',
   })
 
   // ── Shipping ───────────────────────────────────────────────────────────────
@@ -48,7 +50,6 @@ export function useCheckoutState() {
           city: addressObj.city,
           state: addressObj.state,
           country: addressObj.country,
-          ...(addressObj.postal_code ? { postal_code: addressObj.postal_code } : {}),
         },
       })
       const opts = Array.isArray(res?.data) ? res.data.map(r => ({
@@ -83,18 +84,33 @@ export function useCheckoutState() {
   const paymentError = shallowRef(null)
   const selectedPayment = shallowRef(null)
 
+  function asBoolean(value) {
+    if (typeof value === 'boolean') return value
+    if (typeof value === 'number') return value === 1
+    if (typeof value === 'string') return ['true', '1', 'yes'].includes(value.toLowerCase())
+    return false
+  }
+
   async function loadPaymentMethods() {
     paymentLoading.value = true
     paymentError.value = null
     try {
       const res = await request('/payment-methods')
-      const methods = Array.isArray(res?.data) ? res.data.map(m => ({
-        id: m.code,
-        label: m.name,
-        description: m.description ?? '',
-        icon: ICON_MAP[m.code] ?? 'i-lucide-credit-card',
-        requiresRedirect: m.public_config?.requires_redirect ?? false,
-      })) : []
+      const methods = Array.isArray(res?.data) ? res.data.map((m) => {
+        const publicConfig = m.public_config ?? {}
+
+        return {
+          id: m.code,
+          label: m.name,
+          description: m.description ?? '',
+          icon: ICON_MAP[m.code] ?? 'i-lucide-credit-card',
+          requiresRedirect: asBoolean(publicConfig.requires_redirect),
+          supportsVerification: asBoolean(
+            publicConfig.supports_verification
+              ?? m.supports_verification
+          ),
+        }
+      }) : []
       paymentMethods.value = methods
       if (methods.length) selectedPayment.value = methods[0].id
     } catch {
@@ -118,9 +134,15 @@ export function useCheckoutState() {
   const total = computed(() => subtotal.value + shippingCost.value)
 
   // ── Order submission ───────────────────────────────────────────────────────
+  function checkoutHeaders() {
+    if (authToken.value || !cartToken.value) return {}
+    return { 'X-Cart-Token': cartToken.value }
+  }
+
   async function submitOrder(shippingAddress) {
     return request('/checkout/cart', {
       method: 'POST',
+      headers: checkoutHeaders(),
       body: {
         shipping_rate_id: selectedShipping.value,
         payment_method: selectedPayment.value,

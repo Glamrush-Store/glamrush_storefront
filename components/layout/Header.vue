@@ -37,6 +37,7 @@ const guestMenuItems = [
 
 const loggedInMenuItems = computed(() => [
   [
+    { label: 'My Account', icon: 'i-lucide-user', to: '/account' },
     { label: 'Saved items', icon: 'i-lucide-heart', to: '/account/saved-items' },
     { label: 'Orders', icon: 'i-lucide-package', to: '/account/orders' },
   ],

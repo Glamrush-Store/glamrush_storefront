@@ -10,12 +10,28 @@ export const useCartStore = defineStore('cart', () => {
 
   const itemCount = computed(() => items.value.reduce((s, i) => s + i.quantity, 0))
 
+  function createCartToken() {
+    if (import.meta.client && globalThis.crypto?.randomUUID) {
+      return globalThis.crypto.randomUUID()
+    }
+
+    return `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 15)}`
+  }
+
+  function getOrCreateCartToken() {
+    if (!cartToken.value || cartToken.value.length > 36) {
+      cartToken.value = createCartToken()
+    }
+
+    return cartToken.value
+  }
+
   function buildHeaders() {
     const h = { Accept: 'application/json' }
     if (authToken.value) {
       h['Authorization'] = `Bearer ${authToken.value}`
-    } else if (cartToken.value) {
-      h['X-Cart-Token'] = cartToken.value
+    } else {
+      h['X-Cart-Token'] = getOrCreateCartToken()
     }
     return h
   }
