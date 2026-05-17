@@ -1,8 +1,8 @@
-export async function useProducts(query = {}) {
+export function useProducts(query = {}) {
   const config = useRuntimeConfig()
   const cacheKey = `products-${JSON.stringify(query)}`
 
-  const { data, pending, error } = await useFetch(
+  const { data, pending, error } = useLazyFetch(
     `${config.public.apiBase}/products`,
     { key: cacheKey, query }
   )

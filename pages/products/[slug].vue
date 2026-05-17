@@ -349,7 +349,7 @@ async function handleSave() {
 }
 
 // ── Related products ─────────────────────────────────────────────────────────
-const { data: relatedRes } = await useAsyncData(
+const { data: relatedRes } = useLazyAsyncData(
   `related-${route.params.slug}`,
   () => {
     const cat = productData.value?.data?.category?.slug

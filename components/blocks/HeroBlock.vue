@@ -5,13 +5,16 @@ const props = defineProps({
 
 const config = useRuntimeConfig();
 
-const mediaBase = config.public.strapiUrl.replace(/\/api$/, "");
-
-const bgImageUrl = computed(() =>
-  props.block.backgroundImage?.[0]?.url
-    ? `${mediaBase}${props.block.backgroundImage[0].url}`
-    : null,
+const mediaBase = computed(() =>
+  String(config.public.strapiUrl ?? "").replace(/\/api$/, ""),
 );
+
+const bgImageUrl = computed(() => {
+  const imageUrl = props.block.backgroundImage?.[0]?.url;
+  if (!imageUrl) return null;
+  if (/^https?:\/\//.test(imageUrl)) return imageUrl;
+  return `${mediaBase.value}${imageUrl}`;
+});
 </script>
 
 <template>

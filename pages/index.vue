@@ -1,5 +1,5 @@
 <script setup>
-const { heroBannerBlock } = await useCmsPage('home')
+const { heroBannerBlock } = useCmsPage('home')
 </script>
 
 <template>

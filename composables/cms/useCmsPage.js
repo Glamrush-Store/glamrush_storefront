@@ -1,7 +1,7 @@
-export async function useCmsPage(slug) {
+export function useCmsPage(slug) {
   const cacheKey = `strapi-page-${slug}`
 
-  const { data: pageData, pending, error } = await useFetch(
+  const { data: pageData, pending, error } = useLazyFetch(
     `/api/cms/pages/${slug}`,
     {
       key: cacheKey,

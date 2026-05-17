@@ -1,5 +1,5 @@
 <script setup>
-const { footer } = await useFooter()
+const { footer } = useFooter()
 
 const socialIconMap = {
   facebook: 'i-lucide-facebook',

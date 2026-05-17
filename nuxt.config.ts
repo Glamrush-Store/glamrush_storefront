@@ -6,7 +6,11 @@ export default defineNuxtConfig({
     head: {
       link: [
         { rel: "preconnect", href: "https://fonts.googleapis.com" },
-        { rel: "preconnect", href: "https://fonts.gstatic.com", crossorigin: "" },
+        {
+          rel: "preconnect",
+          href: "https://fonts.gstatic.com",
+          crossorigin: "",
+        },
         {
           rel: "stylesheet",
           href: "https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap",
@@ -25,7 +29,11 @@ export default defineNuxtConfig({
     strapiToken: "",
     strapiUrl: "http://localhost:1337/api",
     public: {
-      apiBase: "http://127.0.0.1:8000/api/v1",
+      apiBase: process.env.API_BASE || "http://127.0.0.1:8001/api/v1",
+      strapiUrl:
+        process.env.NUXT_PUBLIC_STRAPI_URL ||
+        process.env.NUXT_STRAPI_URL ||
+        "http://localhost:1337/api",
     },
   },
 });
