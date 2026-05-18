@@ -1,5 +1,6 @@
 export function useAuth() {
   const authStore = useAuthStore();
+  const cartStore = useCartStore();
   const { request } = useApi();
   const router = useRouter();
   const route = useRoute();
@@ -16,6 +17,11 @@ export function useAuth() {
     return "/";
   }
 
+  async function finalizeAuthenticatedSession(authData) {
+    authStore.setAuth(authData);
+    await cartStore.mergeGuestCart();
+  }
+
   async function register(name, email, password, passwordConfirmation) {
     const res = await request("/auth/register", {
       method: "POST",
@@ -27,7 +33,7 @@ export function useAuth() {
       },
     });
     if (res?.data?.token) {
-      authStore.setAuth(res.data);
+      await finalizeAuthenticatedSession(res.data);
       await router.push(getRedirectTarget());
       return { success: true };
     }
@@ -44,7 +50,7 @@ export function useAuth() {
       body: { email, password },
     });
     if (res?.data?.token) {
-      authStore.setAuth(res.data);
+      await finalizeAuthenticatedSession(res.data);
       await router.push(getRedirectTarget());
       return { success: true };
     }

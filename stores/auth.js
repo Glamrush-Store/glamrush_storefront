@@ -26,7 +26,7 @@ export const useAuthStore = defineStore("auth", {
   }),
 
   getters: {
-    isLoggedIn: (state) => !!state.token,
+    isLoggedIn: (state) => !!state.token && !!state.user,
   },
 
   actions: {
@@ -41,6 +41,7 @@ export const useAuthStore = defineStore("auth", {
         });
         this.loginError = null;
         this.setAuth(res.data, true);
+        await useCartStore().mergeGuestCart();
       } catch (error) {
         if (error.status === 401) {
           this.loginError = error.data.message || "Invalid email or password";
@@ -64,7 +65,12 @@ export const useAuthStore = defineStore("auth", {
           },
         });
         this.user = user?.data ?? user;
-      } catch (e) {}
+      } catch (error) {
+        const status = error?.statusCode ?? error?.status;
+        if (status === 401 || status === 404) {
+          this.clearAuthCredentials();
+        }
+      }
     },
 
     setAuth(data, remember = false) {
@@ -78,15 +84,27 @@ export const useAuthStore = defineStore("auth", {
       const tokenCookie = useCookie("auth_token");
       if (tokenCookie.value) {
         this.token = tokenCookie.value;
+      } else {
+        this.user = null;
       }
       this.isInitialized = true;
     },
 
-    logout() {
+    clearAuthCredentials() {
       this.user = null;
       this.token = null;
-      const tokenCookie = useCookie("auth_token");
-      tokenCookie.value = null;
+
+      const defaultTokenCookie = useCookie("auth_token");
+      defaultTokenCookie.value = null;
+
+      const rootTokenCookie = useCookie("auth_token", { path: "/" });
+      rootTokenCookie.value = null;
+
+      $fetch("/api/auth/session", { method: "DELETE" }).catch(() => {});
+    },
+
+    logout() {
+      this.clearAuthCredentials();
       navigateTo("/");
     },
 
@@ -101,7 +119,7 @@ export const useAuthStore = defineStore("auth", {
 
     useAuthToken(remember = true) {
       if (!remember) {
-        return useCookie("auth_token", { sameSite: "lax" });
+        return useCookie("auth_token", { sameSite: "lax", path: "/" });
       } else {
         return useCookie("auth_token", {
           sameSite: "lax",

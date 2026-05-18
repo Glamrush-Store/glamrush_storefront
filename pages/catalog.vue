@@ -89,7 +89,7 @@ const pageRange = computed(() => {
 </script>
 
 <template>
-  <div>
+  <div class="w-full min-w-0 overflow-x-hidden">
 
     <!-- ── Page header ────────────────────────────────────────────────────── -->
     <div class="border-b border-neutral-100 bg-white sticky top-0 z-10">
@@ -134,7 +134,7 @@ const pageRange = computed(() => {
 
     <!-- ── Main content ───────────────────────────────────────────────────── -->
     <LayoutContainer>
-      <div class="flex gap-8 py-8">
+      <div class="flex min-w-0 gap-8 py-8">
 
         <!-- Sidebar -->
         <div class="hidden md:block w-56 shrink-0">
@@ -165,7 +165,7 @@ const pageRange = computed(() => {
         <div class="flex-1 min-w-0">
 
           <!-- Loading skeleton -->
-          <div v-if="pending" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div v-if="pending" class="grid min-w-0 grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 md:gap-6 lg:grid-cols-4">
             <div v-for="n in 12" :key="n" class="animate-pulse">
               <div class="aspect-[4/5] bg-neutral-200 rounded" />
               <div class="mt-3 space-y-2">

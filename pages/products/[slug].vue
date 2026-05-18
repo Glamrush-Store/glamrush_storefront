@@ -370,7 +370,7 @@ function toggleSection(id) {
 </script>
 
 <template>
-  <div>
+  <div class="w-full min-w-0 overflow-x-hidden">
     <!-- Breadcrumb -->
     <div class="border-b border-neutral-100">
       <LayoutContainer>
@@ -608,6 +608,64 @@ function toggleSection(id) {
               Please select all options to continue
             </p>
 
+            <!-- Quantity + Add to Cart + Buy Now (mobile inline fallback) -->
+            <div class="lg:hidden mt-6 space-y-3">
+              <div class="flex items-center justify-between gap-3">
+                <div class="flex items-center border border-neutral-300 h-10">
+                  <button
+                    class="w-10 h-full flex items-center justify-center text-neutral-500 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                    :disabled="qty <= 1"
+                    aria-label="Decrease quantity"
+                    @click="decQty"
+                  >
+                    <UIcon name="i-lucide-minus" class="w-3.5 h-3.5" />
+                  </button>
+                  <span class="w-9 text-center text-sm font-medium text-[#111111]">{{ qty }}</span>
+                  <button
+                    class="w-10 h-full flex items-center justify-center text-neutral-500 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                    :disabled="qty >= maxQty"
+                    aria-label="Increase quantity"
+                    @click="incQty"
+                  >
+                    <UIcon name="i-lucide-plus" class="w-3.5 h-3.5" />
+                  </button>
+                </div>
+                <span
+                  v-if="maxQty !== Infinity && maxQty <= 10"
+                  class="text-xs text-amber-600"
+                >
+                  Only {{ maxQty }} left
+                </span>
+              </div>
+
+              <div class="flex items-stretch gap-2.5">
+                <button
+                  class="flex-1 h-11 bg-[#111111] text-white text-xs tracking-widest uppercase font-medium disabled:opacity-60 cursor-pointer"
+                  :disabled="addingToCart || buyingNow || !isAvailable"
+                  @click="handleAddToCart"
+                >
+                  <span v-if="addingToCart" class="flex items-center justify-center gap-1.5">
+                    <span class="w-3 h-3 border border-white/40 border-t-white rounded-full animate-spin" />
+                    Adding...
+                  </span>
+                  <span v-else>{{ addToCartLabel }}</span>
+                </button>
+
+                <button
+                  v-if="isAvailable"
+                  class="flex-1 h-11 border border-[#111111] text-[#111111] text-xs tracking-widest uppercase font-medium disabled:opacity-60 cursor-pointer"
+                  :disabled="addingToCart || buyingNow"
+                  @click="handleBuyNow"
+                >
+                  <span v-if="buyingNow" class="flex items-center justify-center gap-1.5">
+                    <span class="w-3 h-3 border border-neutral-400 border-t-neutral-800 rounded-full animate-spin" />
+                    ...
+                  </span>
+                  <span v-else>Buy Now</span>
+                </button>
+              </div>
+            </div>
+
             <!-- Quantity + Add to Cart + Buy Now (desktop only) -->
             <div class="hidden lg:block mt-7 space-y-3">
               <!-- Quantity selector -->
@@ -765,88 +823,5 @@ function toggleSection(id) {
       </section>
     </template>
 
-    <!-- Mobile sticky Add to Cart / Buy Now bar -->
-    <Teleport to="body">
-      <div
-        v-if="product && !pending"
-        class="lg:hidden fixed bottom-0 inset-x-0 bg-white border-t border-neutral-200 px-4 py-3 z-40"
-      >
-        <!-- Qty row -->
-        <div class="flex items-center justify-between mb-2.5">
-          <div class="flex items-center gap-2">
-            <div class="flex items-center border border-neutral-300 h-9">
-              <button
-                class="w-9 h-full flex items-center justify-center text-neutral-500 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-                :disabled="qty <= 1"
-                aria-label="Decrease quantity"
-                @click="decQty"
-              >
-                <UIcon name="i-lucide-minus" class="w-3 h-3" />
-              </button>
-              <span class="w-8 text-center text-sm font-medium text-[#111111]">{{ qty }}</span>
-              <button
-                class="w-9 h-full flex items-center justify-center text-neutral-500 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-                :disabled="qty >= maxQty"
-                aria-label="Increase quantity"
-                @click="incQty"
-              >
-                <UIcon name="i-lucide-plus" class="w-3 h-3" />
-              </button>
-            </div>
-            <span
-              v-if="maxQty !== Infinity && maxQty <= 10"
-              class="text-xs text-amber-600"
-            >
-              Only {{ maxQty }} left
-            </span>
-          </div>
-
-          <!-- Wishlist shortcut -->
-          <button
-            v-if="token"
-            class="h-9 w-9 border border-neutral-300 flex items-center justify-center cursor-pointer"
-            :disabled="saving"
-            aria-label="Save to wishlist"
-            @click="handleSave"
-          >
-            <UIcon
-              name="i-lucide-heart"
-              class="w-4 h-4"
-              :class="product && isSaved(product.id) ? 'fill-red-500 text-red-500' : 'text-neutral-600'"
-            />
-          </button>
-        </div>
-
-        <!-- Action buttons row -->
-        <div class="flex items-stretch gap-2.5">
-          <!-- Add to Cart -->
-          <button
-            class="flex-1 h-11 bg-[#111111] text-white text-xs tracking-widest uppercase font-medium disabled:opacity-60 cursor-pointer"
-            :disabled="addingToCart || buyingNow || !isAvailable"
-            @click="handleAddToCart"
-          >
-            <span v-if="addingToCart" class="flex items-center justify-center gap-1.5">
-              <span class="w-3 h-3 border border-white/40 border-t-white rounded-full animate-spin" />
-              Adding...
-            </span>
-            <span v-else>{{ addToCartLabel }}</span>
-          </button>
-
-          <!-- Buy Now -->
-          <button
-            v-if="isAvailable"
-            class="flex-1 h-11 border border-[#111111] text-[#111111] text-xs tracking-widest uppercase font-medium disabled:opacity-60 cursor-pointer"
-            :disabled="addingToCart || buyingNow"
-            @click="handleBuyNow"
-          >
-            <span v-if="buyingNow" class="flex items-center justify-center gap-1.5">
-              <span class="w-3 h-3 border border-neutral-400 border-t-neutral-800 rounded-full animate-spin" />
-              ...
-            </span>
-            <span v-else>Buy Now</span>
-          </button>
-        </div>
-      </div>
-    </Teleport>
   </div>
 </template>

@@ -127,7 +127,7 @@ const menuItems = computed(() => authStore.isLoggedIn ? loggedInMenuItems.value 
 
           <!-- Account -->
           <div class="relative">
-            <UDropdownMenu v-model:open="accountMenuOpen" :items="menuItems" :content="{ align: 'end' }">
+            <UDropdownMenu v-model:open="accountMenuOpen" :items="menuItems" :content="{ align: 'end' }" :modal="false">
               <button class="h-9 flex items-center gap-1.5 px-1 text-neutral-700 hover:text-neutral-900 transition-all duration-200 cursor-pointer">
                 <UIcon :name="buttonIcon" class="w-[18px] h-[18px] transition-all" />
                 <span v-if="authStore.isLoggedIn && authStore.user?.name" class="text-xs font-bold uppercase tracking-wide">

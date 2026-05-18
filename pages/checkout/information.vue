@@ -167,7 +167,7 @@ const summaryOpen = shallowRef(false)
 </script>
 
 <template>
-  <div>
+  <div class="w-full min-w-0 overflow-x-hidden">
 
     <!-- ── Mobile order summary bar ─────────────────────────────────────────── -->
     <div class="lg:hidden sticky top-0 z-30 bg-white border-b border-neutral-200 shadow-sm">
@@ -213,10 +213,10 @@ const summaryOpen = shallowRef(false)
 
     <!-- ── Page content ──────────────────────────────────────────────────────── -->
     <LayoutContainer class="py-7 lg:py-10">
-      <div class="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-8 xl:gap-14">
+      <div class="grid min-w-0 grid-cols-1 lg:grid-cols-[1fr_360px] gap-8 xl:gap-14">
 
         <!-- ── Left: form sections ─────────────────────────────────────── -->
-        <div class="space-y-5">
+        <div class="min-w-0 space-y-5">
 
           <!-- Empty cart guard -->
           <div

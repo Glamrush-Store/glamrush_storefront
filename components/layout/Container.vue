@@ -2,7 +2,7 @@
 </script>
 
 <template>
-  <div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+  <div class="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
     <slot />
   </div>
 </template>
