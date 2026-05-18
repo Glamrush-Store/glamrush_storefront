@@ -4,10 +4,19 @@ export default defineNuxtPlugin(() => {
 
   const cart = useCartStore()
 
-  const initializers = [cart.fetchCart()]
-  if (authStore.token && !authStore.user) {
-    initializers.push(authStore.fetchUser())
+  async function initializeAuthAndCart() {
+    if (authStore.token) {
+      if (!authStore.user) {
+        await authStore.fetchUser()
+      }
+
+      await cart.mergeGuestCart()
+      await cart.fetchCart()
+      return
+    }
+
+    await cart.fetchCart()
   }
 
-  Promise.all(initializers).catch(() => {})
+  initializeAuthAndCart().catch(() => {})
 })

@@ -31,6 +31,31 @@ body {
   background-color: #ffffff;
 }
 
+html,
+body,
+#__nuxt {
+  width: 100%;
+  min-width: 0;
+  overflow-x: hidden;
+}
+
+html {
+  scrollbar-gutter: stable;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
+}
+
 @keyframes heartFly {
   0%   { transform: scale(2.5) translateY(-8px); opacity: 1; }
   75%  { opacity: 1; }
