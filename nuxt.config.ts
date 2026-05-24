@@ -1,3 +1,5 @@
+import { process } from "zod/v4/core";
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
@@ -26,10 +28,10 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     apiBase: "",
-    strapiToken: "",
+    strapiToken: process.env.NUXT_STRAPI_TOKEN,
     strapiUrl: "http://localhost:1337/api",
     public: {
-      apiBase: process.env.API_BASE || "http://127.0.0.1:8001/api/v1",
+      apiBase: process.env.API_BASE_URL || "http://127.0.0.1:8001/api/v1",
       strapiUrl:
         process.env.NUXT_PUBLIC_STRAPI_URL ||
         process.env.NUXT_STRAPI_URL ||

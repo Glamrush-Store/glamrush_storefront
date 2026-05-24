@@ -175,7 +175,7 @@ const menuItems = computed(() => authStore.isLoggedIn ? loggedInMenuItems.value 
           <NuxtLink
             v-if="authStore.isLoggedIn"
             to="/account/saved-items"
-            class="w-9 h-9 flex items-center justify-center text-neutral-700 hover:text-neutral-900 transition-all duration-200 cursor-pointer"
+            class="hidden md:flex w-9 h-9 items-center justify-center text-neutral-700 hover:text-neutral-900 transition-all duration-200 cursor-pointer"
             aria-label="Saved items"
           >
             <UIcon name="i-lucide-heart" class="w-[18px] h-[18px]" />
