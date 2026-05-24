@@ -45,20 +45,28 @@ export function useAuth() {
   }
 
   async function login(email, password) {
-    const res = await request("/auth/login", {
-      method: "POST",
-      body: { email, password },
-    });
-    if (res?.data?.token) {
-      await finalizeAuthenticatedSession(res.data);
-      await router.push(getRedirectTarget());
-      return { success: true };
+    try {
+      const res = await request("/auth/login", {
+        method: "POST",
+        body: { email, password },
+      });
+      if (res?.data?.token) {
+        await finalizeAuthenticatedSession(res.data);
+        await router.push(getRedirectTarget());
+        return { success: true };
+      }
+      return {
+        success: false,
+        message: res?.message ?? "Login failed",
+        errors: res?.errors,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error?.data?.message ?? "Invalid email or password",
+        errors: error?.data?.errors,
+      };
     }
-    return {
-      success: false,
-      message: res?.message ?? "Login failed",
-      errors: res?.errors,
-    };
   }
 
   async function logout() {
