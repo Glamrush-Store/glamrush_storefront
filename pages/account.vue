@@ -13,7 +13,7 @@ const sidebarLinks = [
 </script>
 
 <template>
-  <div class="max-w-4xl mx-auto px-4 py-10">
+  <div class="w-full max-w-4xl mx-auto px-4 py-10 overflow-x-hidden">
 
     <!-- Mobile burger -->
     <button

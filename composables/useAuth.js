@@ -1,7 +1,26 @@
 export function useAuth() {
   const authStore = useAuthStore();
+  const cartStore = useCartStore();
   const { request } = useApi();
   const router = useRouter();
+  const route = useRoute();
+
+  function getRedirectTarget() {
+    const redirect = Array.isArray(route.query.redirect)
+      ? route.query.redirect[0]
+      : route.query.redirect;
+
+    if (typeof redirect === "string" && redirect.startsWith("/") && !redirect.startsWith("//")) {
+      return redirect;
+    }
+
+    return "/";
+  }
+
+  async function finalizeAuthenticatedSession(authData) {
+    authStore.setAuth(authData);
+    await cartStore.mergeGuestCart();
+  }
 
   async function register(name, email, password, passwordConfirmation) {
     const res = await request("/auth/register", {
@@ -14,8 +33,8 @@ export function useAuth() {
       },
     });
     if (res?.data?.token) {
-      authStore.setAuth(res.data);
-      await router.push("/");
+      await finalizeAuthenticatedSession(res.data);
+      await router.push(getRedirectTarget());
       return { success: true };
     }
     return {
@@ -26,20 +45,28 @@ export function useAuth() {
   }
 
   async function login(email, password) {
-    const res = await request("/auth/login", {
-      method: "POST",
-      body: { email, password },
-    });
-    if (res?.data?.token) {
-      authStore.setAuth(res.data);
-      await router.push("/");
-      return { success: true };
+    try {
+      const res = await request("/auth/login", {
+        method: "POST",
+        body: { email, password },
+      });
+      if (res?.data?.token) {
+        await finalizeAuthenticatedSession(res.data);
+        await router.push(getRedirectTarget());
+        return { success: true };
+      }
+      return {
+        success: false,
+        message: res?.message ?? "Login failed",
+        errors: res?.errors,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error?.data?.message ?? "Invalid email or password",
+        errors: error?.data?.errors,
+      };
     }
-    return {
-      success: false,
-      message: res?.message ?? "Login failed",
-      errors: res?.errors,
-    };
   }
 
   async function logout() {

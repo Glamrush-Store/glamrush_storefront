@@ -12,7 +12,23 @@ const {
   hasActiveFilters,
 } = useCatalog()
 
+const { heroBannerBlock: collectionBannerBlock } = useCmsPage('collections')
+const config = useRuntimeConfig()
+
 const { attributes: allAttributes } = useAttributes()
+
+const mediaBase = computed(() =>
+  String(config.public.strapiUrl ?? '').replace(/\/api$/, '')
+)
+
+const collectionBannerImageUrl = computed(() => {
+  const imageUrl = collectionBannerBlock.value?.backgroundImage?.[0]?.url
+  if (!imageUrl) return null
+  if (/^https?:\/\//.test(imageUrl)) return imageUrl
+  return `${mediaBase.value}${imageUrl}`
+})
+
+const collectionBannerCta = computed(() => collectionBannerBlock.value?.cta ?? null)
 
 // Merge facets with globally fetched attributes.
 // facets.attributes has live counts scoped to current filters.
@@ -96,7 +112,7 @@ const pageRange = computed(() => {
       <LayoutContainer>
         <div class="py-4 flex items-center justify-between gap-4">
           <div>
-            <h1 class="text-lg font-semibold text-neutral-900 leading-tight">All Products</h1>
+            <h1 class="text-lg font-semibold text-neutral-900 leading-tight">Collections</h1>
             <p class="text-xs text-neutral-400 mt-0.5 tabular-nums">
               <template v-if="!pending && meta">{{ meta.total }} product{{ meta.total !== 1 ? 's' : '' }}</template>
               <template v-else>&nbsp;</template>
@@ -163,6 +179,43 @@ const pageRange = computed(() => {
 
         <!-- Product area -->
         <div class="flex-1 min-w-0">
+
+          <!-- Strapi banner -->
+          <section
+            v-if="collectionBannerBlock"
+            class="relative mb-8 min-h-52 overflow-hidden rounded-lg bg-neutral-100 px-5 py-8 sm:min-h-60 sm:px-8 lg:px-10"
+          >
+            <img
+              v-if="collectionBannerImageUrl"
+              :src="collectionBannerImageUrl"
+              :alt="collectionBannerBlock.backgroundImage?.[0]?.alternativeText || collectionBannerBlock.title || 'Collections banner'"
+              class="absolute inset-0 h-full w-full object-cover"
+            />
+            <div class="absolute inset-0 bg-black/35" />
+
+            <div class="relative z-[1] flex min-h-36 max-w-md flex-col justify-center gap-3 text-white sm:min-h-44">
+              <p
+                v-if="collectionBannerBlock.subtitle"
+                class="text-xs font-semibold uppercase tracking-widest text-white/80"
+              >
+                {{ collectionBannerBlock.subtitle }}
+              </p>
+              <h2
+                v-if="collectionBannerBlock.title"
+                class="hero-font text-3xl font-bold leading-tight sm:text-4xl"
+              >
+                {{ collectionBannerBlock.title }}
+              </h2>
+              <UButton
+                v-if="collectionBannerCta"
+                :to="collectionBannerCta.url"
+                :label="collectionBannerCta.Label"
+                color="primary"
+                size="md"
+                class="mt-1 self-start"
+              />
+            </div>
+          </section>
 
           <!-- Loading skeleton -->
           <div v-if="pending" class="grid min-w-0 grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 md:gap-6 lg:grid-cols-4">

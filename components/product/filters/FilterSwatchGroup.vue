@@ -6,7 +6,8 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue'])
 
-function toggle(value) {
+function toggle(value, disabled) {
+  if (disabled) return
   const current = [...props.modelValue]
   const idx = current.indexOf(value)
   if (idx >= 0) current.splice(idx, 1)
@@ -43,16 +44,31 @@ function swatchColor(meta) {
     <button
       v-for="opt in options"
       :key="opt.value"
-      :title="`${opt.label} (${opt.count})`"
+      :title="opt.label"
+      :disabled="opt.disabled"
       class="relative w-7 h-7 rounded-full border-2 transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-neutral-500"
-      :class="modelValue.includes(opt.value)
-        ? 'border-neutral-900 scale-110 shadow-md'
-        : 'border-neutral-200 hover:border-neutral-500'"
+      :class="opt.disabled
+        ? 'border-neutral-200 opacity-35 cursor-not-allowed'
+        : modelValue.includes(opt.value)
+          ? 'border-neutral-900 scale-110 shadow-md cursor-pointer'
+          : 'border-neutral-200 hover:border-neutral-500 cursor-pointer'"
       :style="{ backgroundColor: swatchColor(opt.meta) }"
-      @click="toggle(opt.value)"
+      @click="toggle(opt.value, opt.disabled)"
     >
+      <!-- Cross overlay for disabled swatches -->
       <span
-        v-if="modelValue.includes(opt.value)"
+        v-if="opt.disabled"
+        class="absolute inset-0 flex items-center justify-center pointer-events-none"
+      >
+        <svg class="w-3.5 h-3.5" viewBox="0 0 14 14" fill="none">
+          <line x1="2" y1="2" x2="12" y2="12" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="12" y1="2" x2="2" y2="12" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </span>
+
+      <!-- Check overlay for selected swatches -->
+      <span
+        v-else-if="modelValue.includes(opt.value)"
         class="absolute inset-0 flex items-center justify-center"
       >
         <svg class="w-3 h-3" viewBox="0 0 12 12" fill="none">

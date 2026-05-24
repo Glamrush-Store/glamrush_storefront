@@ -21,7 +21,7 @@ const addingToCart = ref(false)
 async function handleAddToCart() {
   if (addingToCart.value || !isAvailable.value) return
   addingToCart.value = true
-  const success = await cart.addItem(props.product.id)
+  const success = await cart.addItem(props.product.id, 1, mainImage.value, activeVariant.value?.id ?? null)
   addingToCart.value = false
   if (success) bump()
 }
@@ -44,7 +44,9 @@ async function handleSave() {
   }
 }
 
-const defaultVariant = computed(() => props.product.variants?.[0] ?? null)
+const defaultVariant = computed(() =>
+  props.product.variants?.find(v => v.isDefault) ?? props.product.variants?.[0] ?? null
+)
 
 const activeVariant = computed(() => {
   if (!selectedVariantId.value) return defaultVariant.value

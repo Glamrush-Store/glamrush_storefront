@@ -16,6 +16,7 @@ const cart = useCartStore()
 const { bumping } = useCartAnimation()
 const cartOpen = ref(false)
 const mobileMenuOpen = ref(false)
+const accountMenuOpen = ref(false)
 
 async function openSearch() {
   searchOpen.value = true
@@ -36,6 +37,7 @@ const guestMenuItems = [
 
 const loggedInMenuItems = computed(() => [
   [
+    { label: 'My Account', icon: 'i-lucide-user', to: '/account' },
     { label: 'Saved items', icon: 'i-lucide-heart', to: '/account/saved-items' },
     { label: 'Orders', icon: 'i-lucide-package', to: '/account/orders' },
   ],
@@ -116,7 +118,7 @@ const menuItems = computed(() => authStore.isLoggedIn ? loggedInMenuItems.value 
 
           <!-- Search icon -->
           <button
-            class="w-9 h-9 flex items-center justify-center text-neutral-700 hover:text-neutral-900 transition-colors"
+            class="w-9 h-9 flex items-center justify-center text-neutral-700 hover:text-neutral-900 transition-all duration-200 cursor-pointer"
             aria-label="Search"
             @click="openSearch"
           >
@@ -125,9 +127,17 @@ const menuItems = computed(() => authStore.isLoggedIn ? loggedInMenuItems.value 
 
           <!-- Account -->
           <div class="relative">
-            <UDropdownMenu :items="menuItems" :content="{ align: 'end' }">
-              <button class="w-9 h-9 flex items-center justify-center text-neutral-700 hover:text-neutral-900 transition-colors">
+            <UDropdownMenu v-model:open="accountMenuOpen" :items="menuItems" :content="{ align: 'end' }" :modal="false">
+              <button class="h-9 flex items-center gap-1.5 px-1 text-neutral-700 hover:text-neutral-900 transition-all duration-200 cursor-pointer">
                 <UIcon :name="buttonIcon" class="w-[18px] h-[18px] transition-all" />
+                <span v-if="authStore.isLoggedIn && authStore.user?.name" class="text-xs font-bold uppercase tracking-wide">
+                  {{ authStore.user.name }}
+                </span>
+                <UIcon
+                  name="i-lucide-chevron-down"
+                  class="w-3.5 h-3.5 transition-transform duration-200"
+                  :class="accountMenuOpen ? '-rotate-180' : 'rotate-0'"
+                />
               </button>
             </UDropdownMenu>
 
@@ -165,7 +175,7 @@ const menuItems = computed(() => authStore.isLoggedIn ? loggedInMenuItems.value 
           <NuxtLink
             v-if="authStore.isLoggedIn"
             to="/account/saved-items"
-            class="w-9 h-9 flex items-center justify-center text-neutral-700 hover:text-neutral-900 transition-colors"
+            class="hidden md:flex w-9 h-9 items-center justify-center text-neutral-700 hover:text-neutral-900 transition-all duration-200 cursor-pointer"
             aria-label="Saved items"
           >
             <UIcon name="i-lucide-heart" class="w-[18px] h-[18px]" />
@@ -174,7 +184,7 @@ const menuItems = computed(() => authStore.isLoggedIn ? loggedInMenuItems.value 
           <!-- Cart -->
           <div class="relative">
             <button
-              class="w-9 h-9 flex items-center justify-center text-neutral-700 hover:text-neutral-900 transition-colors"
+              class="w-9 h-9 flex items-center justify-center text-neutral-700 hover:text-neutral-900 transition-all duration-200 cursor-pointer"
               aria-label="Cart"
               @click="cartOpen = true"
             >

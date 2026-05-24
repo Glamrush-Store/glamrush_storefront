@@ -4,6 +4,7 @@ const props = defineProps({
 })
 
 const cart = useCartStore()
+const thumb = computed(() => cart.thumbOverrides[props.item.product_id] ?? props.item.thumb ?? null)
 const updating = ref(false)
 
 async function setQuantity(qty) {
@@ -23,8 +24,8 @@ async function remove() {
     <!-- Thumbnail -->
     <div class="w-16 h-20 shrink-0 bg-neutral-100 rounded overflow-hidden">
       <img
-        v-if="item.thumb"
-        :src="item.thumb"
+        v-if="thumb"
+        :src="thumb"
         :alt="item.name"
         class="w-full h-full object-cover"
       />
@@ -42,6 +43,15 @@ async function remove() {
         {{ item.name }}
       </NuxtLink>
 
+      <div v-if="item.unit_price" class="flex items-baseline gap-1.5 mt-0.5">
+        <span class="text-xs text-neutral-500">
+          {{ new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', minimumFractionDigits: 0 }).format(item.unit_price * item.quantity) }}
+        </span>
+        <span v-if="item.quantity > 1" class="text-[11px] text-neutral-400">
+          ({{ new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', minimumFractionDigits: 0 }).format(item.unit_price) }} each)
+        </span>
+      </div>
+
       <!-- Qty stepper -->
       <div class="flex items-center gap-2 mt-2">
         <button
@@ -52,7 +62,7 @@ async function remove() {
           <UIcon name="i-lucide-minus" class="w-3 h-3" />
         </button>
 
-        <span class="w-6 text-center text-sm tabular-nums">{{ item.quantity }}</span>
+        <span class="w-6 text-center text-sm tabular-nums text-neutral-900">{{ item.quantity }}</span>
 
         <button
           class="w-6 h-6 flex items-center justify-center rounded border border-neutral-200 text-neutral-600 hover:border-neutral-400 hover:text-neutral-900 transition-colors disabled:opacity-40"

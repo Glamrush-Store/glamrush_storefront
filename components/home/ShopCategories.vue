@@ -1,5 +1,5 @@
 <script setup>
-const { categories } = await useCategories()
+const { categories } = useCategories()
 const mainCategory = computed(() => categories.value[0] ?? null)
 const gridCategories = computed(() => categories.value.slice(1, 5))
 

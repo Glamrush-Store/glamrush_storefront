@@ -1,5 +1,5 @@
 <script setup>
-const { products } = await useProducts({ featured: true, per_page: 4 })
+const { products } = useProducts({ featured: true, per_page: 4 })
 </script>
 
 <template>
